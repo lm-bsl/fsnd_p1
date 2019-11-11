@@ -79,7 +79,7 @@ class Show(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'))
     artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'))
-    start_time = db.Column(db.DateTime, nullable=False)
+    start_time = db.Column(db.DateTime(timezone=True), nullable=False)
 
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
@@ -172,17 +172,24 @@ def show_venue(venue_id):
 def create_venue_form():
     form = VenueForm()
 
+    return render_template('forms/new_venue.html', form=form)
+
+@app.route('/venues/create', methods=['POST'])
+def create_venue_submission():
+    # TODO: insert form data as a new Venue record in the db, instead
+    # TODO: modify data to be the data object returned from db insertion
+
     error = False
     body = {}
     try:
         description = request.get_json()['description']
         venue = Venue(name=form.name,
-                        city=form.city,
-                        state=form.state,
-                        adress=form.address,
-                        phone=form.phone,
-                        genres=form.genres,
-                        facebook_link=form.facebook_link)
+                      city=form.city,
+                      state=form.state,
+                      adress=form.address,
+                      phone=form.phone,
+                      genres=form.genres,
+                      facebook_link=form.facebook_link)
 
         db.session.add(venue)
         db.session.commit()
@@ -196,14 +203,6 @@ def create_venue_form():
         abort(400)
     else:
         return jsonify(body)
-
-    return render_template('forms/new_venue.html', form=form)
-
-@app.route('/venues/create', methods=['POST'])
-def create_venue_submission():
-    # TODO: insert form data as a new Venue record in the db, instead
-    # TODO: modify data to be the data object returned from db insertion
-
     # on successful db insert, flash success
     flash('Venue ' + request.form['name'] + ' was successfully listed!')
     # TODO: on unsuccessful db insert, flash an error instead.
@@ -338,7 +337,8 @@ def shows():
     # displays list of shows at /shows
     # TODO: replace with real venues data.
     #       num_shows should be aggregated based on number of upcoming shows per venue.
-    data = [{
+    data = Show.query.all()
+    data_old = [{
         "venue_id": 1,
         "venue_name": "The Musical Hop",
         "artist_id": 4,
